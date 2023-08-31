@@ -1,3 +1,3 @@
 - services：存放各个产品针对自身业务举例的签名代码
 - signature-v1：存放签名方法v1的各语言示例代码，如果缺失，则到services/cvm/signature-v1下寻找
-- signature-v3：存放签名方法v3的各语言示例代码
+- signature-v3：存放签名方法v3的各语言示例代码，同上
