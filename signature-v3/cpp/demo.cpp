@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -98,8 +100,10 @@ string HexEncode(const string &input)
 int main()
 {
     // 密钥参数
-    string SECRET_ID = "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******";
-    string SECRET_KEY = "Gu5t9xGARNpq86cd98joQYCN3*******";
+    // 需要设置环境变量 TENCENTCLOUD_SECRET_ID，值为示例的 AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******
+    string SECRET_ID = getenv("TENCENTCLOUD_SECRET_ID");
+    // 需要设置环境变量 TENCENTCLOUD_SECRET_KEY，值为示例的 Gu5t9xGARNpq86cd98joQYCN3*******
+    string SECRET_KEY = getenv("TENCENTCLOUD_SECRET_KEY");
 
     string service = "cvm";
     string host = "cvm.tencentcloudapi.com";
@@ -113,12 +117,20 @@ int main()
     string httpRequestMethod = "POST";
     string canonicalUri = "/";
     string canonicalQueryString = "";
-    string canonicalHeaders = "content-type:application/json; charset=utf-8\nhost:" + host + "\n";
-    string signedHeaders = "content-type;host";
+    string lower = action;
+    std::transform(action.begin(), action.end(), lower.begin(), ::tolower);
+    string canonicalHeaders = string("content-type:application/json; charset=utf-8\n")
+            + "host:" + host + "\n"
+            + "x-tc-action:" + lower + "\n";
+    string signedHeaders = "content-type;host;x-tc-action";
     string payload = "{\"Limit\": 1, \"Filters\": [{\"Values\": [\"\\u672a\\u547d\\u540d\"], \"Name\": \"instance-name\"}]}";
     string hashedRequestPayload = sha256Hex(payload);
-    string canonicalRequest = httpRequestMethod + "\n" + canonicalUri + "\n" + canonicalQueryString + "\n"
-            + canonicalHeaders + "\n" + signedHeaders + "\n" + hashedRequestPayload;
+    string canonicalRequest = httpRequestMethod + "\n"
+            + canonicalUri + "\n"
+            + canonicalQueryString + "\n"
+            + canonicalHeaders + "\n"
+            + signedHeaders + "\n"
+            + hashedRequestPayload;
     cout << canonicalRequest << endl;
 
     // ************* 步骤 2：拼接待签名字符串 *************
@@ -143,14 +155,14 @@ int main()
     cout << authorization << endl;
 
     string curlcmd = "curl -X POST https://" + host + "\n"
-                   + " -H \"Authorization: " + authorization + "\n"
+                   + " -H \"Authorization: " + authorization + "\"\n"
                    + " -H \"Content-Type: application/json; charset=utf-8\"" + "\n"
-                   + " -H \"Host: " + host + "\n"
-                   + " -H \"X-TC-Action: " + action + "\n"
-                   + " -H \"X-TC-Timestamp: " + RequestTimestamp + "\n"
-                   + " -H \"X-TC-Version: " + version + "\n"
-                   + " -H \"X-TC-Region: " + region + "\n"
-                   + " -d '" + payload;
+                   + " -H \"Host: " + host + "\"\n"
+                   + " -H \"X-TC-Action: " + action + "\"\n"
+                   + " -H \"X-TC-Timestamp: " + RequestTimestamp + "\"\n"
+                   + " -H \"X-TC-Version: " + version + "\"\n"
+                   + " -H \"X-TC-Region: " + region + "\"\n"
+                   + " -d '" + payload + "\'";
     cout << curlcmd << endl;
     return 0;
 };

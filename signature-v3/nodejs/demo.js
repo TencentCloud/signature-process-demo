@@ -20,8 +20,10 @@ function getDate(timestamp) {
 
 function main(){
     // 密钥参数
-    const SECRET_ID = "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******"
-    const SECRET_KEY = "Gu5t9xGARNpq86cd98joQYCN3*******"
+    // 需要设置环境变量 TENCENTCLOUD_SECRET_ID，值为示例的 AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******
+    const SECRET_ID = process.env.TENCENTCLOUD_SECRET_ID
+    // 需要设置环境变量 TENCENTCLOUD_SECRET_KEY，值为示例的 Gu5t9xGARNpq86cd98joQYCN3*******
+    const SECRET_KEY = process.env.TENCENTCLOUD_SECRET_KEY
 
     const endpoint = "cvm.tencentcloudapi.com"
     const service = "cvm"
@@ -34,15 +36,16 @@ function main(){
     const date = getDate(timestamp)
 
     // ************* 步骤 1：拼接规范请求串 *************
-    const signedHeaders = "content-type;host"
-
     const payload = "{\"Limit\": 1, \"Filters\": [{\"Values\": [\"\\u672a\\u547d\\u540d\"], \"Name\": \"instance-name\"}]}"
 
     const hashedRequestPayload = getHash(payload);
     const httpRequestMethod = "POST"
     const canonicalUri = "/"
     const canonicalQueryString = ""
-    const canonicalHeaders = "content-type:application/json; charset=utf-8\n" + "host:" + endpoint + "\n"
+    const canonicalHeaders = "content-type:application/json; charset=utf-8\n"
+        + "host:" + endpoint + "\n"
+        + "x-tc-action:" + action.toLowerCase() + "\n"
+    const signedHeaders = "content-type;host;x-tc-action"
 
     const canonicalRequest = httpRequestMethod + "\n"
                          + canonicalUri + "\n"

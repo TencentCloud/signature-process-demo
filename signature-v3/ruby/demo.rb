@@ -6,8 +6,10 @@ require 'time'
 require 'openssl'
 
 # 密钥参数
-secret_id = 'AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******'
-secret_key = 'Gu5t9xGARNpq86cd98joQYCN3*******'
+# 需要设置环境变量 TENCENTCLOUD_SECRET_ID，值为示例的 AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******
+secret_id = ENV["TENCENTCLOUD_SECRET_ID"]
+# 需要设置环境变量 TENCENTCLOUD_SECRET_KEY，值为示例的 Gu5t9xGARNpq86cd98joQYCN3*******
+secret_key = ENV["TENCENTCLOUD_SECRET_KEY"]
 
 service = 'cvm'
 host = 'cvm.tencentcloudapi.com'
@@ -24,8 +26,8 @@ date = Time.at(timestamp).utc.strftime('%Y-%m-%d')
 http_request_method = 'POST'
 canonical_uri = '/'
 canonical_querystring = ''
-canonical_headers = "content-type:application/json; charset=utf-8\nhost:#{host}\n"
-signed_headers = 'content-type;host'
+canonical_headers = "content-type:application/json; charset=utf-8\nhost:#{host}\nx-tc-action:#{action.downcase}\n"
+signed_headers = 'content-type;host;x-tc-action'
 # params = { 'Limit' => 1, 'Filters' => [{ 'Name' => 'instance-name', 'Values' => ['未命名'] }] }
 # payload = JSON.generate(params, { 'ascii_only' => true, 'space' => ' ' })
 # json will generate in random order, to get specified result in example, we hard-code it here.

@@ -11,8 +11,10 @@ import javax.xml.bind.DatatypeConverter;
 
 public class TencentCloudAPITC3Demo {
     private final static Charset UTF8 = StandardCharsets.UTF_8;
-    private final static String SECRET_ID = "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******";
-    private final static String SECRET_KEY = "Gu5t9xGARNpq86cd98joQYCN3*******";
+    // 需要设置环境变量 TENCENTCLOUD_SECRET_ID，值为示例的 AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******
+    private final static String SECRET_ID = System.getenv("TENCENTCLOUD_SECRET_ID");
+    // 需要设置环境变量 TENCENTCLOUD_SECRET_KEY，值为示例的 Gu5t9xGARNpq86cd98joQYCN3*******
+    private final static String SECRET_KEY = System.getenv("TENCENTCLOUD_SECRET_KEY");
     private final static String CT_JSON = "application/json; charset=utf-8";
 
     public static byte[] hmac256(byte[] key, String msg) throws Exception {
@@ -46,8 +48,9 @@ public class TencentCloudAPITC3Demo {
         String httpRequestMethod = "POST";
         String canonicalUri = "/";
         String canonicalQueryString = "";
-        String canonicalHeaders = "content-type:application/json; charset=utf-8\n" + "host:" + host + "\n";
-        String signedHeaders = "content-type;host";
+        String canonicalHeaders = "content-type:application/json; charset=utf-8\n"
+                + "host:" + host + "\n" + "x-tc-action:" + action.toLowerCase() + "\n";
+        String signedHeaders = "content-type;host;x-tc-action";
 
         String payload = "{\"Limit\": 1, \"Filters\": [{\"Values\": [\"\\u672a\\u547d\\u540d\"], \"Name\": \"instance-name\"}]}";
         String hashedRequestPayload = sha256Hex(payload);

@@ -40,8 +40,10 @@ public class Application
         string canonicalUri = "/";
         string canonicalQueryString = "";
         string contentType = "application/json";
-        string canonicalHeaders = "content-type:" + contentType + "; charset=utf-8\n" + "host:" + endpoint + "\n";
-        string signedHeaders = "content-type;host";
+        string canonicalHeaders = "content-type:" + contentType + "; charset=utf-8\n"
+            + "host:" + endpoint + "\n"
+            + "x-tc-action:" + action.ToLower() + "\n";
+        string signedHeaders = "content-type;host;x-tc-action";
         string hashedRequestPayload = SHA256Hex(requestPayload);
         string canonicalRequest = httpRequestMethod + "\n"
             + canonicalUri + "\n"
@@ -54,7 +56,10 @@ public class Application
         // ************* 步骤 2：拼接待签名字符串 *************
         string credentialScope = datestr + "/" + service + "/" + "tc3_request";
         string hashedCanonicalRequest = SHA256Hex(canonicalRequest);
-        string stringToSign = algorithm + "\n" + requestTimestamp.ToString() + "\n" + credentialScope + "\n" + hashedCanonicalRequest;
+        string stringToSign = algorithm + "\n"
+            + requestTimestamp.ToString() + "\n"
+            + credentialScope + "\n"
+            + hashedCanonicalRequest;
         Console.WriteLine(stringToSign);
 
         // ************* 步骤 3：计算签名 *************
@@ -86,8 +91,10 @@ public class Application
     public static void Main(string[] args)
     {
         // 密钥参数
-        string SECRET_ID = "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******";
-        string SECRET_KEY = "Gu5t9xGARNpq86cd98joQYCN3*******";
+        // 需要设置环境变量 TENCENTCLOUD_SECRET_ID，值为示例的 AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******
+        string SECRET_ID = Environment.GetEnvironmentVariable("TENCENTCLOUD_SECRET_ID");
+        // 需要设置环境变量 TENCENTCLOUD_SECRET_KEY，值为示例的 Gu5t9xGARNpq86cd98joQYCN3*******
+        string SECRET_KEY = Environment.GetEnvironmentVariable("TENCENTCLOUD_SECRET_KEY");
 
         string service = "cvm";
         string endpoint = "cvm.tencentcloudapi.com";

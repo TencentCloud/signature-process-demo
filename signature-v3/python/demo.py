@@ -3,8 +3,10 @@ import hashlib, hmac, json, os, sys, time
 from datetime import datetime
 
 # 密钥参数
-secret_id = "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******"
-secret_key = "Gu5t9xGARNpq86cd98joQYCN3*******"
+# 需要设置环境变量 TENCENTCLOUD_SECRET_ID，值为示例的 AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******
+secret_id = os.environ.get("TENCENTCLOUD_SECRET_ID")
+# 需要设置环境变量 TENCENTCLOUD_SECRET_KEY，值为示例的 Gu5t9xGARNpq86cd98joQYCN3*******
+secret_key = os.environ.get("TENCENTCLOUD_SECRET_KEY")
 
 service = "cvm"
 host = "cvm.tencentcloudapi.com"
@@ -16,7 +18,7 @@ algorithm = "TC3-HMAC-SHA256"
 #timestamp = int(time.time())
 timestamp = 1551113065
 date = datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d")
-params = {"Limit": 1, "Filters": [{"Name": "instance-name", "Values": [u"未命名"]}]}
+params = {"Limit": 1, "Filters": [{"Values": [u"未命名"], "Name": "instance-name"}]}
 
 # ************* 步骤 1：拼接规范请求串 *************
 http_request_method = "POST"
@@ -24,8 +26,8 @@ canonical_uri = "/"
 canonical_querystring = ""
 ct = "application/json; charset=utf-8"
 payload = json.dumps(params)
-canonical_headers = "content-type:%s\nhost:%s\n" % (ct, host)
-signed_headers = "content-type;host"
+canonical_headers = "content-type:%s\nhost:%s\nx-tc-action:%s\n" % (ct, host, action.lower())
+signed_headers = "content-type;host;x-tc-action"
 hashed_request_payload = hashlib.sha256(payload.encode("utf-8")).hexdigest()
 canonical_request = (http_request_method + "\n" +
                      canonical_uri + "\n" +

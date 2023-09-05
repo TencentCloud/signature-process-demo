@@ -5,6 +5,8 @@ import (
     "crypto/sha256"
     "encoding/hex"
     "fmt"
+    "os"
+    "strings"
     "time"
 )
 
@@ -20,8 +22,10 @@ func hmacsha256(s, key string) string {
 }
 
 func main() {
-    secretId := "AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******"
-    secretKey := "Gu5t9xGARNpq86cd98joQYCN3*******"
+    // 需要设置环境变量 TENCENTCLOUD_SECRET_ID，值为示例的 AKIDz8krbsJ5yKBZQpn74WFkmLPx3*******
+    secretId := os.Getenv("TENCENTCLOUD_SECRET_ID")
+    // 需要设置环境变量 TENCENTCLOUD_SECRET_KEY，值为示例的 Gu5t9xGARNpq86cd98joQYCN3*******
+    secretKey := os.Getenv("TENCENTCLOUD_SECRET_KEY")
     host := "cvm.tencentcloudapi.com"
     algorithm := "TC3-HMAC-SHA256"
     service := "cvm"
@@ -35,8 +39,9 @@ func main() {
     httpRequestMethod := "POST"
     canonicalURI := "/"
     canonicalQueryString := ""
-    canonicalHeaders := "content-type:application/json; charset=utf-8\n" + "host:" + host + "\n"
-    signedHeaders := "content-type;host"
+    canonicalHeaders := fmt.Sprintf("content-type:%s\nhost:%s\nx-tc-action:%s\n",
+        "application/json; charset=utf-8", host, strings.ToLower(action))
+    signedHeaders := "content-type;host;x-tc-action"
     payload := `{"Limit": 1, "Filters": [{"Values": ["\u672a\u547d\u540d"], "Name": "instance-name"}]}`
     hashedRequestPayload := sha256hex(payload)
     canonicalRequest := fmt.Sprintf("%s\n%s\n%s\n%s\n%s\n%s",
