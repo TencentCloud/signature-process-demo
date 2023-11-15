@@ -1,7 +1,7 @@
 const crypto = require('crypto');
 
 function get_req_url(params, endpoint){
-    params['Signature'] = escape(params['Signature']);
+    params['Signature'] = encodeURIComponent(params['Signature']);
     const url_strParam = sort_params(params)
     return "https://" + endpoint + "/?" + url_strParam.slice(1);
 }
