@@ -1,3 +1,4 @@
+// gcc demo.c -std=c11 -lssl -lcrypto
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
@@ -30,10 +31,10 @@ void sha256_hex(const char* str, char* result)
     }
 }
 
-void hmac_sha256(char* key, const char* input, char* result)
+void hmac_sha256(const char* key, int key_len,
+                 const char* input, int input_len,
+                 unsigned char* output, unsigned int* output_len)
 {
-    unsigned char hash[32];
-
     HMAC_CTX *h;
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     HMAC_CTX hmac;
@@ -43,17 +44,15 @@ void hmac_sha256(char* key, const char* input, char* result)
     h = HMAC_CTX_new();
 #endif
 
-    HMAC_Init_ex(h, key, strlen(key), EVP_sha256(), NULL);
-    HMAC_Update(h, ( unsigned char* )input, strlen(input));
-    unsigned int len = 32;
-    HMAC_Final(h, hash, &len);
+    HMAC_Init_ex(h, key, key_len, EVP_sha256(), NULL);
+    HMAC_Update(h, ( unsigned char* )input, input_len);
+    HMAC_Final(h, output, output_len);
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
     HMAC_CTX_cleanup(h);
 #else
     HMAC_CTX_free(h);
 #endif
-    strncpy(result, (const char*)hash, len);
 }
 
 void hex_encode(const char* input, char* output)
@@ -94,6 +93,7 @@ int main()
     const char* action = "DescribeInstances";
     const char* version = "2017-03-12";
     int64_t timestamp = 1551113065;
+    //int64_t timestamp = time(NULL);
     char date[20] = {0};
     get_utc_date(timestamp, date, sizeof(date));
 
@@ -137,14 +137,15 @@ int main()
     // ************* 步骤 3：计算签名 ***************
     char k_key[64] = {0};
     sprintf(k_key, "%s%s", "TC3", SECRET_KEY);
-    char k_date[64] = {0};
-    hmac_sha256(k_key, date, k_date);
-    char k_service[64] = {0};
-    hmac_sha256(k_date, service, k_service);
-    char k_signing[64] = {0};
-    hmac_sha256(k_service, "tc3_request", k_signing);
-    char k_hmac_sha_sign[64] = {0};
-    hmac_sha256(k_signing, string_to_sign, k_hmac_sha_sign);
+    unsigned char k_date[64] = {0};
+    unsigned int output_len = 0;
+    hmac_sha256(k_key, strlen(k_key), date, strlen(date), k_date, &output_len);
+    unsigned char k_service[64] = {0};
+    hmac_sha256(k_date, output_len, service, strlen(service), k_service, &output_len);
+    unsigned char k_signing[64] = {0};
+    hmac_sha256(k_service, output_len, "tc3_request", strlen("tc3_request"), k_signing, &output_len);
+    unsigned char k_hmac_sha_sign[64] = {0};
+    hmac_sha256(k_signing, output_len, string_to_sign, strlen(string_to_sign), k_hmac_sha_sign, &output_len);
 
     char signature[128] = {0};
     hex_encode(k_hmac_sha_sign, signature);
