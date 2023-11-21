@@ -123,7 +123,7 @@ int main()
     // ************* 步骤 2：拼接待签名字符串 *************
     const char*  algorithm = "TC3-HMAC-SHA256";
     char request_timestamp[16] = {0};
-    sprintf(request_timestamp, "%d", timestamp);
+    sprintf(request_timestamp, "%ld", timestamp);
     char credential_scope[64] = {0};
     strcat(credential_scope, date);
     sprintf(credential_scope, "%s/%s/tc3_request", date, service);
@@ -157,14 +157,14 @@ int main()
     printf("%s\n", authorization);
 
     char curlcmd[10240] = {0};
-    sprintf(curlcmd, "curl -X POST https://%s\n \
-            -H \"Authorization: %s\"\n \
-            -H \"Content-Type: application/json; charset=utf-8\"\n \
-            -H \"Host: %s\"\n \
-            -H \"X-TC-Action: %s\"\n \
-            -H \"X-TC-Timestamp: %s\"\n \
-            -H \"X-TC-Version: %s\"\n \
-            -H \"X-TC-Region: %s\"\n \
+    sprintf(curlcmd, "curl -X POST https://%s\\\n \
+            -H \"Authorization: %s\"\\\n \
+            -H \"Content-Type: application/json; charset=utf-8\"\\\n \
+            -H \"Host: %s\"\\\n \
+            -H \"X-TC-Action: %s\"\\\n \
+            -H \"X-TC-Timestamp: %s\"\\\n \
+            -H \"X-TC-Version: %s\"\\\n \
+            -H \"X-TC-Region: %s\"\\\n \
             -d \'%s\'",
             host, authorization, host, action, request_timestamp, version, region, payload);
     printf("%s\n", curlcmd);
