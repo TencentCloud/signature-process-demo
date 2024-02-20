@@ -7,6 +7,7 @@ secret_id=$TENCENTCLOUD_SECRET_ID
 # 需要设置环境变量 TENCENTCLOUD_SECRET_KEY，值为示例的 Gu5t9xGARNpq86cd98joQYCN3*******
 #secret_key=Gu5t9xGARNpq86cd98joQYCN3*******
 secret_key=$TENCENTCLOUD_SECRET_KEY
+token=""
 
 service="cvm"
 host="cvm.tencentcloudapi.com"
@@ -14,13 +15,9 @@ region="ap-guangzhou"
 action="DescribeInstances"
 version="2017-03-12"
 algorithm="TC3-HMAC-SHA256"
-timestamp=1551113065
-# 获取真实当前时间戳
 timestamp=$(date +%s)
 date=$(date -u -d @$timestamp +"%Y-%m-%d")
-# utf8编码请求体
-payload=$(echo '{"Limit": 1, "Filters": [{"Values": ["未命名"], "Name": "instance-name"}]}' | iconv -t utf-8)
-
+payload="{}"
 
 # ************* 步骤 1：拼接规范请求串 *************
 http_request_method="POST"
@@ -39,27 +36,18 @@ string_to_sign="$algorithm\n$timestamp\n$credential_scope\n$hashed_canonical_req
 echo "$string_to_sign"
 
 # ************* 步骤 3：计算签名 *************
-# 计算签名摘要函数
-sign() {
-    printf "$2" | openssl sha256 -hmac "$1" | awk '{print $2}'
-}
-secret_date=$(sign "TC3$secret_key" "$date")
+secret_date=$(printf "$date" | openssl sha256 -hmac "TC3$secret_key" | awk '{print $2}')
 echo $secret_date
-# 转二进制
-secret_date=$(printf $secret_date | xxd -r -p)
-secret_service=$(sign "$secret_date" "$service")
+secret_service=$(printf $service | openssl dgst -sha256 -mac hmac -macopt hexkey:"$secret_date" | awk '{print $2}')
 echo $secret_service
-secret_service=$(printf $secret_service | xxd -r -p)
-secret_signing=$(sign "$secret_service" "tc3_request")
+secret_signing=$(printf "tc3_request" | openssl dgst -sha256 -mac hmac -macopt hexkey:"$secret_service" | awk '{print $2}')
 echo $secret_signing
-secret_signing=$(printf $secret_signing | xxd -r -p)
-signature=$(printf "$string_to_sign" | openssl sha256 -hmac "$secret_signing" | awk '{print $2}')
+signature=$(printf "$string_to_sign" | openssl dgst -sha256 -mac hmac -macopt hexkey:"$secret_signing" | awk '{print $2}')
 echo "$signature"
 
 # ************* 步骤 4：拼接 Authorization *************
 authorization="$algorithm Credential=$secret_id/$credential_scope, SignedHeaders=$signed_headers, Signature=$signature"
 echo $authorization
 
-# 使用文档中的例子则必定会失败，因为时间戳离当前时间太大
-# 根据注释将密钥和时间戳timestamp调整为当前的实际值则可以调用成功
-curl -XPOST "https://$host" -d "$payload" -H "Authorization: $authorization" -H "Content-Type: application/json; charset=utf-8" -H "Host: $host" -H "X-TC-Action: $action" -H "X-TC-Timestamp: $timestamp" -H "X-TC-Version: $version" -H "X-TC-Region: $region"
+# ************* 步骤 5：构造并发起请求 *************
+curl -XPOST "https://$host" -d "$payload" -H "Authorization: $authorization" -H "Content-Type: application/json; charset=utf-8" -H "Host: $host" -H "X-TC-Action: $action" -H "X-TC-Timestamp: $timestamp" -H "X-TC-Version: $version" -H "X-TC-Region: $region" -H "X-TC-Token: $token"
