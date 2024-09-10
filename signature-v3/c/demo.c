@@ -55,13 +55,12 @@ void hmac_sha256(const char* key, int key_len,
 #endif
 }
 
-void hex_encode(const char* input, char* output)
+void hex_encode(const char* input, int input_len, char* output)
 {
     static const char* const lut = "0123456789abcdef";
-    size_t len = strlen(input);
     char add_out[128] = {0};
     char temp[2] = {0};
-    for (size_t i = 0; i < len; ++i)
+    for (size_t i = 0; i < input_len; ++i)
     {
         const unsigned char c = input[i];
         temp[0] = lut[c >> 4];
@@ -148,7 +147,7 @@ int main()
     hmac_sha256(k_signing, output_len, string_to_sign, strlen(string_to_sign), k_hmac_sha_sign, &output_len);
 
     char signature[128] = {0};
-    hex_encode(k_hmac_sha_sign, signature);
+    hex_encode(k_hmac_sha_sign, output_len, signature);
     printf("%s\n", signature);
 
     // ************* 步骤 4：拼接 Authorization *************
